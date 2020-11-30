@@ -112,8 +112,6 @@ class Feed{/*{{{*/
 			glVertex3i((c+0.3)*unit-unit*col/2,10,((r+0.3)*unit)-unit*row/2); 		
 			glEnd();
 
-
-
 			}
 		}
 		void setState(int state){
@@ -212,10 +210,13 @@ class Ghost{/*{{{*/
 			}
 
 		}
-		void draw(double r, double g, double b){
+		void draw(float r, float g, float b){
 			glColor3f(0.7f,0.5f,0.7f);
-			//glTranslatef(0.0f,10,0.0f);
-			gluSphere(ghost, 20, 10, 10);
+			
+			glPushMatrix();
+			glTranslatef(x,10,y);
+			gluSphere(ghost, 10, 10, 10);
+			glPopMatrix();
 			/*
 			glColor3f(r,g,b);
 			glBegin(GL_QUADS);
@@ -241,7 +242,7 @@ class Pacman{/*{{{*/
 	public :
 		Pacman(){
 			this->x = 0;
-			this->y = unit*(row/2-2);
+			this->y = unit*(col/2-2);
 			this->state = QUITE;
 		}
 		void position(int x, int y){
@@ -260,30 +261,30 @@ class Pacman{/*{{{*/
 			if(state == MOVE && t<time_remaining){
 				nx = x+ vx*t;
 				ny = y+ vy*t;
-				if(collision(nx,ny)==false){
+			/*	if(collision(nx,ny)==false){
 					x = nx;
 					y = ny;
-				}
-
+				}*/
 				time_remaining-=t;
 			}
 			else if(state==MOVE && t>=time_remaining){
 				nx = x+ vx*time_remaining;
 				ny = y+ vy*time_remaining;
 				
-				if(collision(nx,ny)==false){
+				/*if(collision(nx,ny)==false){
 					x = nx;
 					y = ny;
-				}
+				}*/
 				state=QUITE;
 			}
-
 		}
-		void draw(double r, double g, double b){
-			glColor3f(0.7f,0.4f,0.7f);
-			glTranslatef(x*unit, 0.0f,0.0f);
-			gluSphere(man, 20, 10, 10);
-			glLoadIdentity();
+		void draw(float r,float g,float b){
+			glPushMatrix();
+			glColor3f(r,g,b);	
+			glTranslatef(x,10,y);
+			gluSphere(man, 15, 10, 10);
+			//glLoadIdentity();
+			glPopMatrix();
 			/*	glBegin(GL_QUADS);
 			glVertex3i(x-WIDTH/row*0.2, y-HEIGHT/col*0.3,100);
 			glVertex3i(x+WIDTH/row*0.2, y-HEIGHT/col*0.3,100);
@@ -318,7 +319,7 @@ class Wall{/*{{{*/
 		void draw(){
 					glColor3f(0.2,0.2,0.2);
 			glBegin(GL_QUADS);
-		glVertex3i((c+1)*unit-unit*col/2,10,((r)*unit)-unit*row/2); 
+			glVertex3i((c+1)*unit-unit*col/2,10,((r)*unit)-unit*row/2); 
 			glVertex3i((c)*unit-unit*col/2,10,((r)*unit)-unit*row/2); 
 			glVertex3i((c)*unit-unit*col/2,-unit,((r)*unit)-unit*row/2); 
 			glVertex3i((c+1)*unit-unit*col/2,-unit,((r)*unit)-unit*row/2); 		
@@ -609,7 +610,7 @@ void show_map(){
 int main(int argc, char* argv[]){/*{{{*/
 	row = atoi(argv[1]);
 	col = atoi(argv[2]);
-	//check arguments{{{i
+	//check arguments{{{
 	if (col%2==0 || (row<13 &&col<13)) {
 		printf("row and col num need to be odd number bigger than 11 and 13");
 		exit(0);
@@ -650,10 +651,10 @@ int main(int argc, char* argv[]){/*{{{*/
 	}
 	f_left = f_cnt;
 	for (int i=0; i<enemy_cnt; i++){
-		ghost[i].position(WIDTH/2-WIDTH/col*2+2*2*i*WIDTH/col, HEIGHT/2);
+		ghost[i].position(0,20*i);
 	}
-	player.position(0,0);
-	
+	player.position(0,200);
+
 	anglealpha=90;
 	anglebeta =30;
 	//----------------------------------------------
@@ -690,6 +691,66 @@ int main(int argc, char* argv[]){/*{{{*/
 	return 0;
 
 }/*}}}*/
+void display()
+{
+	int i,j;
+
+	glClearColor(0.8,0.8,0.8,1);
+	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	PositionObserver(anglealpha, anglebeta, 450);
+
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glOrtho(-WIDTH*0.5, WIDTH*0.5, -HEIGHT*0.5,HEIGHT*0.5,10,2000);
+
+	glMatrixMode(GL_MODELVIEW);
+	
+	//corridor{{{
+//	glColor3f(0.1,0.5,0.6);
+ 
+	/*
+	glBindTexture(GL_TEXTURE_2D,0);
+	glBegin(GL_QUADS);
+  glTexCoord2f(-4.0,0.0); glVertex3i(-200,0,0);
+  glTexCoord2f(4.0,0.0); glVertex3i(200,0,0);
+  glTexCoord2f(4.0,4.0); glVertex3i(200,200,0);
+  glTexCoord2f(-4.0,4.0); glVertex3i(-200,200,0);
+
+	*/			
+	glBindTexture(GL_TEXTURE_2D,0);
+	glBegin(GL_QUADS);
+	glTexCoord2f(-4.0,0.0);	glVertex3i(-unit*col/2,-unit,unit*row/2); 
+	glTexCoord2f(4.0,0.0); glVertex3i(-unit*col/2,-unit,-unit*row/2); 
+	glTexCoord2f(4.0,4.0); glVertex3i(unit*col/2,-unit,-unit*row/2); 
+	glTexCoord2f(-4.0,4.0); glVertex3i(unit*col/2,-unit,unit*row/2); 	
+
+	glEnd();
+/*
+	glColor3f(0,0,0);
+	glBegin(GL_QUADS);
+	glTexCoord2f(-4.0,0.0);	glVertex3i(-1000/2,-unit,1000/2); 
+	glTexCoord2f(4.0,0.0); glVertex3i(1000/2,-unit,-1000/2); 
+	glTexCoord2f(4.0,4.0); glVertex3i(1000/2,-unit,-1000/2); 
+	glTexCoord2f(-4.0,4.0); glVertex3i(-1000/2,-unit,1000/2); 	
+
+	glEnd();*/
+/*}}}*/
+
+	glPolygonMode(GL_FRONT,GL_FILL);
+	//glPolygonMode(GL_BACK,GL_LINE);
+	for(i=0; i<f_cnt; i++)
+		feed[i].draw();	
+	for(i=0; i<w_cnt; i++)
+		wall[i].draw();
+	player.draw(0.8f,0.8f,0.3f);
+	for(i=0; i<enemy_cnt; i++)
+		ghost[i].draw(0.3f,0.5f,0.3f);
+		
+	glutSwapBuffers();
+
+}
 void PositionObserver(float alpha,float beta,int radi){/*{{{*/
   float x,y,z;
   float upx,upy,upz;
@@ -720,57 +781,6 @@ void PositionObserver(float alpha,float beta,int radi){/*{{{*/
   gluLookAt(x,y,z,    0.0, 0.0, 0.0,     upx,upy,upz);
   //printf("%lf, %lf, %lf\n", upx,upy, upz);
 }/*}}}*/
-void display()
-{
-	int i,j;
-
-	glClearColor(0.8,0.8,0.8,1);
-	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	PositionObserver(anglealpha, anglebeta, 450);
-
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(-WIDTH*0.6, WIDTH*0.6, -HEIGHT*0.6,HEIGHT*0.6,10,2000);
-
-	glMatrixMode(GL_MODELVIEW);
-	
-	//corridor{{{
-	glColor3f(0.1,0.5,0.6);
- 
-	/*
-	glBindTexture(GL_TEXTURE_2D,0);
-	glBegin(GL_QUADS);
-  glTexCoord2f(-4.0,0.0); glVertex3i(-200,0,0);
-  glTexCoord2f(4.0,0.0); glVertex3i(200,0,0);
-  glTexCoord2f(4.0,4.0); glVertex3i(200,200,0);
-  glTexCoord2f(-4.0,4.0); glVertex3i(-200,200,0);
-
-	*/
-	glBindTexture(GL_TEXTURE_2D,0);
-	glBegin(GL_QUADS);
-	glTexCoord2f(-4.0,0.0);	glVertex3i(-unit*col/2,-unit,unit*row/2); 
-	glTexCoord2f(4.0,0.0); glVertex3i(-unit*col/2,-unit,-unit*row/2); 
-	glTexCoord2f(4.0,4.0); glVertex3i(unit*col/2,-unit,-unit*row/2); 
-	glTexCoord2f(-4.0,4.0); glVertex3i(unit*col/2,-unit,unit*row/2); 	
-
-	glEnd();
-/*}}}*/
-
-	glPolygonMode(GL_FRONT,GL_FILL);
-	//glPolygonMode(GL_BACK,GL_LINE);
-	for(i=0; i<f_cnt; i++)
-		feed[i].draw();	
-	for(i=0; i<w_cnt; i++)
-		wall[i].draw();
-	player.draw(0.8,0.8,0.3);
-	for(i=0; i<enemy_cnt; i++)
-		ghost[i].draw(0.3,0.5,0.3);
-		
-	glutSwapBuffers();
-
-}
 void ckeyboard(unsigned char c,int x,int y)/*{{{*/
 {
   int i,j;
@@ -782,6 +792,8 @@ void ckeyboard(unsigned char c,int x,int y)/*{{{*/
   else if (c=='j')
     anglealpha=(anglealpha+3)%360;
   else if (c=='l')
+	anglealpha=(anglealpha-3)%360;
+
   glutPostRedisplay();
 }/*}}}*/
 void keyboard(int key,int x,int y){/*{{{*/
@@ -814,8 +826,8 @@ void idle(){/*{{{*/
 	t = glutGet(GLUT_ELAPSED_TIME);
 	player.integrate(t-last_t);
 	for(int i=0; i<enemy_cnt; i++){
-	ghost[i].movement(player.getPosition(),5);
-	ghost[i].integrate(t-last_t);
+		//ghost[i].movement(player.getPosition(),5);
+		ghost[i].integrate(t-last_t);
 	}
 	last_t = t;
 	glutPostRedisplay();
