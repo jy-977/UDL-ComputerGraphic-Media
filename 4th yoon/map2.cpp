@@ -1,4 +1,4 @@
-#include <stdio.h>
+#include <stdio.h>{{{
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
@@ -33,7 +33,7 @@ int enemy_cnt;
 int unit = 30;
 int anglealpha = 0;
 int anglebeta = 0;
-////up left down rigt{{{
+////up left down rigt
 int vecX[4] = {-1,0,1,0};
 int vecY[4] = {0,-1,0,1};
 
@@ -46,8 +46,9 @@ int keyflag = 0;
 
 int checkX[8] ={-1,-1,0,1,1,1,0,-1};
 int checkY[8] ={0,1,1,1,0,-1,-1,-1};
-/*}}}*/
+GLint position[4];
 
+/*}}}*/
 bool G_collision (int nx, int ny);
 bool collision (int nx, int ny);
 void PositionObserver(float alpha,float beta,int radi);
@@ -295,6 +296,12 @@ class Pacman{/*{{{*/
 			temp.y = y;
 			return temp;
 		}
+		double getX(){
+			return x;
+		}
+		double getY(){
+			return y;
+		}
 };/*}}}*/
 class Wall{/*{{{*/
 	private : 
@@ -412,39 +419,25 @@ bool G_collision (int nx, int ny){/*{{{*/
 	}
 	return false;
 }/*}}}*/
-bool collision (int nx, int ny){/*{{{*/
+bool collision (int dx, int dy){/*{{{*/
 	//nx , ny가 갈 곳에 해당하는 r, c를 찾음
 	//map[r][c] 가 9인지 확인
-
-	int idx[4] = {-1,1,-1,1};
-	int idy[4] = {-1,-1,1,1};
-	double wx = WIDTH/row; 
-	double wy = WIDTH/row;
+	q temp = player.getPosition();
 	int c , r;	
-	//formula X : c < (nx+idx[i]*dx[i])*col/WIDTH < c+1
-	//formula Y : r < (HEIGHT-(ny+idy[i]*dy[i]))*row/HEIGHT < r+1
-	
+	int nx, ny;
+	nx = temp.x +dx;
+	ny = temp.y +dy;
+	c =ceil( (temp.x + dx + unit*col/2)/unit);
+	r =ceil( (temp.y + dy + unit*row/2)/unit);
 	// 다음 next x,y가 벽의 범위안에 있으면 false ,, 방향?
-	c= floor(nx/unit);
-	r= floor(ny/unit);
-	if (map [r][c] == 9 )
-		return false;
-	return true;
-/*
-	for (int i=0; i<4; i++){
-		c = floor(((nx+idx[i]*dx)*col/WIDTH));
-		r = floor((HEIGHT-(ny+idy[i]*dy))*row/HEIGHT);
-		if (map[r][c]==9 && ((nx>c*wx)&&(nx<(c+1)*wx))&&((ny>r*wy)&&(ny<(r+1)*wy))){
-			return true;
-		}
-		for(j=0; j<f_cnt; j++){
-			q temp = feed[j].getinfo();
-			if(temp.x== r && temp.y ==c)
-				feed[j].setState(QUITE);
-			}
-*/
-	}
+	printf("%d %d %d %d : %d  \n ", nx, ny,c,r,map[r][c]);
+
+	//c= floor((temp.x+dx)/unit);
+	//r= floor((temp.y+dy)/unit);
+	if (map [int(r)][int(c)] == 9 )
+		return true;
 	return false;
+
 }/*}}}*/
 //---------map generation-------------------------------
 //------------------------------------------------------
@@ -601,14 +594,14 @@ void show_map(){
 		}
 	}
 	//print
-	print_map();
+	//print_map();
 }/*}}}*/
 
 //-----------------------------------------------
 int main(int argc, char* argv[]){/*{{{*/
 	row = atoi(argv[1]);
 	col = atoi(argv[2]);
-	//check arguments{{{i
+	//check arguments
 	if (col%2==0 || (row<13 &&col<13)) {
 		printf("row and col num need to be odd number bigger than 11 and 13");
 		exit(0);
@@ -637,8 +630,8 @@ int main(int argc, char* argv[]){/*{{{*/
 	map_gen();
 
 	show_map();
-	//print_map();}}}
-	//feed = new Feed[f_cnt+1];
+	print_map();/*}}}*/
+	//feed = new Feed[f_cnt+1];}}}
 	for (int i=0; i<row; i++){
 		for (int j=0; j<col; j++){
 			if(map[i][j] == 9)
@@ -651,7 +644,7 @@ int main(int argc, char* argv[]){/*{{{*/
 	for (int i=0; i<enemy_cnt; i++){
 		ghost[i].position(0,HEIGHT/col);
 	}
-	player.position(0,200);
+	player.position(0,0);
 	
 	anglealpha=90;
 	anglebeta =30;
@@ -664,6 +657,7 @@ int main(int argc, char* argv[]){/*{{{*/
 	glutCreateWindow("packman");
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_TEXTURE_2D);
+	glEnable(GL_LIGHTING);
 	glutDisplayFunc(display);
 	glutKeyboardFunc(ckeyboard);
 	glutSpecialFunc(keyboard);
@@ -721,6 +715,10 @@ void PositionObserver(float alpha,float beta,int radi){/*{{{*/
 }/*}}}*/
 void display()
 {
+	GLfloat color[4];
+	GLfloat material[4];
+	GLfloat ambientLight[4];
+
 	int i,j;
 
 	glClearColor(0.8,0.8,0.8,1);
@@ -738,15 +736,6 @@ void display()
 	//corridor{{{
 	glColor3f(0.1,0.5,0.6);
  
-	/*
-	glBindTexture(GL_TEXTURE_2D,0);
-	glBegin(GL_QUADS);
-  glTexCoord2f(-4.0,0.0); glVertex3i(-200,0,0);
-  glTexCoord2f(4.0,0.0); glVertex3i(200,0,0);
-  glTexCoord2f(4.0,4.0); glVertex3i(200,200,0);
-  glTexCoord2f(-4.0,4.0); glVertex3i(-200,200,0);
-
-	*/
 	glBindTexture(GL_TEXTURE_2D,0);
 	glBegin(GL_QUADS);
 	glTexCoord2f(-4.0,0.0);	glVertex3i(-unit*col/2,-unit,unit*row/2); 
@@ -758,7 +747,29 @@ void display()
 /*}}}*/
 
 	glPolygonMode(GL_FRONT,GL_FILL);
-	//glPolygonMode(GL_BACK,GL_LINE);
+//	glPolygonMode(GL_BACK,GL_LINE);
+	
+	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0);
+	glEnable(GL_LIGHT1);
+	//position[0]=0; position[1]=0; position[2]=0; position[3]=1; 
+  	//glLightiv(GL_LIGHT0,GL_POSITION,position);	
+
+  	ambientLight[0]=0.2f; ambientLight[1]=0.2f; ambientLight[2]=0.2f; ambientLight[3]= 1.0f;
+	glLightfv(GL_LIGHT0, GL_AMBIENT, ambientLight);
+
+	position[0]=player.getX(); position[1]=75; position[2]=player.getY(); position[3]=1; 
+ 	 glLightiv(GL_LIGHT1,GL_POSITION,position);
+  
+	  color[0]=0.3	; color[1]=0.3; color[2]=0.3; color[3]=1;
+	  glLightfv(GL_LIGHT1,GL_DIFFUSE,color);
+
+	  glLightf(GL_LIGHT1,GL_CONSTANT_ATTENUATION,1.0);
+	  glLightf(GL_LIGHT1,GL_LINEAR_ATTENUATION,0.0);
+	  glLightf(GL_LIGHT1,GL_QUADRATIC_ATTENUATION,0.0);
+
+//  glEnable(GL_LIGHT1);
+
 	for(i=0; i<f_cnt; i++)
 		feed[i].draw();	
 	for(i=0; i<w_cnt; i++)
@@ -791,19 +802,23 @@ void keyboard(int key,int x,int y){/*{{{*/
 
 		case GLUT_KEY_UP:
 			//ghost.movement(player.getPosition(),5);
-			player.movement(0,-1,5);
+			if(!collision(0,-1))
+				player.movement(0,-1,5);
 			break;
 		case GLUT_KEY_DOWN:
 			//ghost.movement(player.getPosition(),5);			
-			player.movement(0,1,5);
+			if(!collision(0,1))
+				player.movement(0,1,5);
 			break;
 		case GLUT_KEY_LEFT:
 			//ghost.movement(player.getPosition(),5);
-			player.movement(-1,0,5);
+			if(!collision(-1,0))	
+				player.movement(-1,0,5);
 			break;
 		case GLUT_KEY_RIGHT:
 			//ghost.movement(player.getPosition(),5);
-			player.movement(1,0,5);
+			if(!collision(1,0))
+				player.movement(1,0,5);
 			break;
 	}
 	glutPostRedisplay();
@@ -895,7 +910,7 @@ void LoadTexture(char *filename,int dim)/*{{{*/
 
   glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
-  glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_REPLACE);
+  glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
   glTexImage2D(GL_TEXTURE_2D,0,GL_RGB,dim,dim,0,GL_RGB,GL_UNSIGNED_BYTE,buffer2);
 
   free(buffer);
