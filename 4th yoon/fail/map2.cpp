@@ -7,7 +7,7 @@
 #include <math.h>
 #include <jpeglib.h>
 
-	using namespace std;
+using namespace std;
 #define FULL 10001
 #define WIDTH 1000
 #define HEIGHT 1000
@@ -16,25 +16,25 @@
 #define GHOST 666
 #define PACMAN 999
 #define PI 3.1416
-	typedef struct n{
-		int x;
-		int y;
-	} q;
+typedef struct n{
+	int x;
+	int y;
+} q;
 
-	q queue[FULL];
-	int front, rear, max;
-	int row, col;
-	int i,j;
-	int** map;
-	int f_cnt=0;
-	int f_left;
-	int w_cnt=0;
-	int enemy_cnt;
-	int unit = 30;
-	int anglealpha = 0;
-	int anglebeta = 0;/*}}}*/
-	////up left down rigt{{{
-	int vecX[4] = {-1,0,1,0};
+q queue[FULL];
+int front, rear, max;
+int row, col;
+int i,j;
+int** map;
+int f_cnt=0;
+int f_left;
+int w_cnt=0;
+int enemy_cnt;
+int unit = 30;
+int anglealpha = 0;
+int anglebeta = 0;/*}}}*/
+////up left down rigt{{{
+int vecX[4] = {-1,0,1,0};
 int vecY[4] = {0,-1,0,1};
 
 int keyflag = 0;
@@ -47,91 +47,90 @@ int keyflag = 0;
 int checkX[8] ={-1,-1,0,1,1,1,0,-1};
 int checkY[8] ={0,1,1,1,0,-1,-1,-1};
 GLint position[4];
-GLint direction[4];
+
 /*}}}*/
-bool G_collision (int nx, int ny);
-bool collision (int nx, int ny);
-void PositionObserver(float alpha,float beta,int radi);
-void LoadTexture(char *filename,int dim);
-void ReadJPEG(char *filename,unsigned char **image,int *width, int *height);
+	bool G_collision (int nx, int ny);
+	bool collision (int nx, int ny);
+	void PositionObserver(float alpha,float beta,int radi);
+	void LoadTexture(char *filename,int dim);
+	void ReadJPEG(char *filename,unsigned char **image,int *width, int *height);
 
-class Feed{/*{{{*/
-	private:
-		int r,c;
-		int state = MOVE;
-	public :
-		Feed(){
-		}
-		Feed(int r, int c){
-			this->r = r;
-			this->c = c;
-			this->state = MOVE;
-		}
-		void init(int r, int c){
-			this->r = r;
-			this->c = c;
-		}
-		void draw(){
-			if(this->state == MOVE){
-				glColor3f(0.8,0.8,0);
-				glBegin(GL_QUADS);
-				glVertex3i((c+0.6)*unit-unit*col/2,10,((r+0.3)*unit)-unit*row/2); 
-				glVertex3i((c+0.3)*unit-unit*col/2,10,((r+0.3)*unit)-unit*row/2); 
-				glVertex3i((c+0.3)*unit-unit*col/2,5,((r+0.3)*unit)-unit*row/2); 
-				glVertex3i((c+0.6)*unit-unit*col/2,5,((r+0.3)*unit)-unit*row/2); 		
-				glEnd();
-
-				glColor3f(0.8,0.8,0);
-				glBegin(GL_QUADS);
-				glVertex3i((c+0.6)*unit-unit*col/2,5,((r+0.6)*unit)-unit*row/2); 
-				glVertex3i((c+0.3)*unit-unit*col/2,5,((r+0.6)*unit)-unit*row/2); 
-				glVertex3i((c+0.3)*unit-unit*col/2,10,((r+0.6)*unit)-unit*row/2); 
-				glVertex3i((c+0.6)*unit-unit*col/2,10,((r+0.6)*unit)-unit*row/2); 		
-				glEnd();
-
-				glColor3f(0.8,0.8,0);
-				glBegin(GL_QUADS);
-				glVertex3i((c+0.6)*unit-unit*col/2,5,((r+0.3)*unit)-unit*row/2); 
-				glVertex3i((c+0.6)*unit-unit*col/2,5,((r+0.6)*unit)-unit*row/2); 
-				glVertex3i((c+0.6)*unit-unit*col/2,10,((r+0.6)*unit)-unit*row/2); 
-				glVertex3i((c+0.6)*unit-unit*col/2,10,((r+0.3)*unit)-unit*row/2); 		
-				glEnd();
-
-				glColor3f(0.8,0.8,0);
-				glBegin(GL_QUADS);
-				glVertex3i((c+0.3)*unit-unit*col/2,10,((r+0.3)*unit)-unit*row/2); 
-				glVertex3i((c+0.3)*unit-unit*col/2,10,((r+0.6)*unit)-unit*row/2); 
-				glVertex3i((c+0.3)*unit-unit*col/2,5,((r+0.6)*unit)-unit*row/2); 
-				glVertex3i((c+0.3)*unit-unit*col/2,5,((r+0.3)*unit)-unit*row/2); 		
-				glEnd();
-
-				glBegin(GL_QUADS);
-				glVertex3i((c+0.6)*unit-unit*col/2,10,((r+0.3)*unit)-unit*row/2); 
-				glVertex3i((c+0.6)*unit-unit*col/2,10,((r+0.6)*unit)-unit*row/2); 
-				glVertex3i((c+0.3)*unit-unit*col/2,10,((r+0.6)*unit)-unit*row/2); 
-				glVertex3i((c+0.3)*unit-unit*col/2,10,((r+0.3)*unit)-unit*row/2); 		
-				glEnd();
+	class Feed{/*{{{*/
+		private:
+			int r,c;
+			int state = MOVE;
+		public :
+			Feed(){
 			}
-		}
-		void setStateOFF(){
-			if(this->state == MOVE){
-				this->state = QUITE;
+			Feed(int r, int c){
+				this->r = r;
+				this->c = c;
+				this->state = MOVE;
 			}
-		}
-		q getinfo(){
-			q temp;
-			temp.x = r;
-			temp.y = c;
-			return temp;
-		}
-		int getR(){
-			return r;
-		}
-		int getC(){
-			return c;
-		}
+			void init(int r, int c){
+				this->r = r;
+				this->c = c;
+			}
+			void draw(){
+				if(this->state == MOVE){
+					glColor3f(0.8,0.8,0);
+					glBegin(GL_QUADS);
+					glVertex3i((c+0.6)*unit-unit*col/2,10,((r+0.3)*unit)-unit*row/2); 
+					glVertex3i((c+0.3)*unit-unit*col/2,10,((r+0.3)*unit)-unit*row/2); 
+					glVertex3i((c+0.3)*unit-unit*col/2,5,((r+0.3)*unit)-unit*row/2); 
+					glVertex3i((c+0.6)*unit-unit*col/2,5,((r+0.3)*unit)-unit*row/2); 		
+					glEnd();
 
-};/*}}}*/
+					glColor3f(0.8,0.8,0);
+					glBegin(GL_QUADS);
+					glVertex3i((c+0.6)*unit-unit*col/2,5,((r+0.6)*unit)-unit*row/2); 
+					glVertex3i((c+0.3)*unit-unit*col/2,5,((r+0.6)*unit)-unit*row/2); 
+					glVertex3i((c+0.3)*unit-unit*col/2,10,((r+0.6)*unit)-unit*row/2); 
+					glVertex3i((c+0.6)*unit-unit*col/2,10,((r+0.6)*unit)-unit*row/2); 		
+					glEnd();
+
+					glColor3f(0.8,0.8,0);
+					glBegin(GL_QUADS);
+					glVertex3i((c+0.6)*unit-unit*col/2,5,((r+0.3)*unit)-unit*row/2); 
+					glVertex3i((c+0.6)*unit-unit*col/2,5,((r+0.6)*unit)-unit*row/2); 
+					glVertex3i((c+0.6)*unit-unit*col/2,10,((r+0.6)*unit)-unit*row/2); 
+					glVertex3i((c+0.6)*unit-unit*col/2,10,((r+0.3)*unit)-unit*row/2); 		
+					glEnd();
+
+					glColor3f(0.8,0.8,0);
+					glBegin(GL_QUADS);
+					glVertex3i((c+0.3)*unit-unit*col/2,10,((r+0.3)*unit)-unit*row/2); 
+					glVertex3i((c+0.3)*unit-unit*col/2,10,((r+0.6)*unit)-unit*row/2); 
+					glVertex3i((c+0.3)*unit-unit*col/2,5,((r+0.6)*unit)-unit*row/2); 
+					glVertex3i((c+0.3)*unit-unit*col/2,5,((r+0.3)*unit)-unit*row/2); 		
+					glEnd();
+
+
+					glBegin(GL_QUADS);
+					glVertex3i((c+0.6)*unit-unit*col/2,10,((r+0.3)*unit)-unit*row/2); 
+					glVertex3i((c+0.6)*unit-unit*col/2,10,((r+0.6)*unit)-unit*row/2); 
+					glVertex3i((c+0.3)*unit-unit*col/2,10,((r+0.6)*unit)-unit*row/2); 
+					glVertex3i((c+0.3)*unit-unit*col/2,10,((r+0.3)*unit)-unit*row/2); 		
+					glEnd();
+
+
+
+				}
+			}
+			void setState(int state){
+				if(this->state == MOVE){
+					this->state = state;
+					f_left--;
+				}
+			}
+			q getinfo(){
+				q temp;
+				temp.x = r;
+				temp.y = c;
+				return temp;
+			}
+
+	};/*}}}*/
 class Ghost{/*{{{*/
 	private:
 		double x,y;
@@ -149,58 +148,87 @@ class Ghost{/*{{{*/
 			this->x = x;
 			this->y = y;
 		}
-		void movement(int duration){
+		void movement(q pac,int duration){
 			double nextx, nexty;
+			double dx = 0;
+			double dy = 0;
+			dx = pac.x - x;
+			dy = pac.y - y;
+			/*
+			   srand(time(NULL));
 
-			srand(time(NULL));
-
-			for(int i=0; i<4; i++){
-				vx = 0; vy = -unit;
-/*				if(rand()%2 ==1){
-					vx=unit; vy=0;
-				}
-				else{
-					vx=0; vy=unit;
-				}
-
-
-				if(rand()%2 ==1){
-					vx=unit; vy=0;}
-				else{
-					vx=0; vy=-unit;
-				}
-*/
-
-			}
+			   for(int i=0; i<4; i++){
+			   if(dx>=0 && dy>=0){
+			   if(rand()%2 ==1){
+			   vx=1; vy=0;
+			   }
+			   else{
+			   vx=0; vy=1;
+			   }
+			   }
+			   else if(dx>=0 && dy<0){
+			   if(rand()%2 ==1){
+			   vx=1; vy=0;}
+			   else{
+			   vx=0; vy=-1;
+			   }
+			   }
+			   else if(dx<0 && dy>=0){
+			   if(rand()%2 ==1){
+			   vx=-1; vy=0;}
+			   else{
+			   vx=0; vy=1;
+			   }
+			   }
+			   else if(dx<0 && dy<0){
+			   if(rand()%2 ==1){
+			   vx=-1; vy=0;}
+			   else{
+			   vx=0; vy=-1;
+			   }
+			   }
+			   }*/
 			//printf("vx : %dd vy : %d\n", vx,vy);
 			time_remaining = duration;
 		}
 		void integrate(long t){
 			double nx, ny;//double nx, ny;
 			if(t<time_remaining){
-				x = x+ (double)vx*t;
-				y = y+ (double)vy*t;
+				x = x+ (double)vx*(t*0.8);
+				y = y+ (double)vy*t*0.8;
+				/*if(G_collision(nx,ny)==false){
+				  x = nx;
+				  y = ny;
+				  }*/
+
 				time_remaining-=t;
 			}
 			else if(t>=time_remaining){
-				x = x+ vx*(time_remaining);
-				y = y+ vy*time_remaining;
+				x = x+ vx*(time_remaining*0.8);
+				y = y+ vy*time_remaining*0.8;
+
+				/*if(G_collision(nx,ny)==false){
+				  x = nx;
+				  y = ny;
+				  }*/
 			}
 
 		}
-		void draw(float r, float g, float b){
-			glColor3f(r,g,b);
+		void draw(double r, double g, double b){
+			glColor3f(0.7f,0.5f,0.7f);
 			glTranslatef(x,10,y);
 			gluSphere(ghost, 10, 10, 10);
+			/*
+			   glColor3f(r,g,b);
+			   glBegin(GL_QUADS);
+			   glVertex3i(x-WIDTH/row*0.2, y-HEIGHT/col*0.3,100);
+			   glVertex3i(x+WIDTH/row*0.2, y-HEIGHT/col*0.3,100);
+			   glVertex3i(x+WIDTH/row*0.2, y+HEIGHT/col*0.3,100);
+			   glVertex3i(x-WIDTH/row*0.2, y+HEIGHT/col*0.3,100);
+			   glEnd();*/
 		}
 		int getIdentity(){
 			return identity;
-		}
-		double getX(){
-			return x;
-		}
-		double getY(){
-			return y;
 		}
 };/*}}}*/
 class Pacman{/*{{{*/
@@ -354,38 +382,57 @@ int isEmpty(){
 		return 0;
 	else return 1;
 }/*}}}*/
+
+
 Wall wall[FULL];
 Feed feed[FULL];
 Pacman player; 
-Ghost ghost[3];
+Ghost ghost[10];
 long last_t = 0;
-bool G_collision (int dx, int dy){/*{{{*/
-	int x , y;
-	x = ghost[0].getX()+dx; y = ghost[0].getY()+dy;
+
+bool G_collision (int nx, int ny){/*{{{*/
+	//nx , ny가 갈 곳에 해당하는 r, c를 찾음
+	//map[r][c] 가 9인지 확인
+
+	int idx[4] = {-1,1,-1,1};
+	int idy[4] = {-1,-1,1,1};
+	double dx = WIDTH/row*0.2;
+	double dy = HEIGHT/col*0.3;
+	double wx = WIDTH/row; 
+	double wy = WIDTH/row;
 	int c , r;	
-	c = (x + unit*col/2)/unit;
-	r = (y + unit*row/2)/unit;
-	//wall collision
-	if (map [int(r)][int(c)] == 9 )
-		return true;
-	return false;
+	//formula X : c < (nx+idx[i]*dx[i])*col/WIDTH < c+1
+	//formula Y : r < (HEIGHT-(ny+idy[i]*dy[i]))*row/HEIGHT < r+1
+
+	for (int i=0; i<4; i++){
+		c = floor(((nx+idx[i]*dx)*col/WIDTH));
+		r = floor((HEIGHT-(ny+idy[i]*dy))*row/HEIGHT);
+		if (map[r][c]==9 /*&& ((nx>c*wx)&&(nx<(c+1)*wx))&&((ny>r*wy)&&(ny<(r+1)*wy))*/){
+			return true;
+		}
+		/* pacman이랑마주쳤을때 처리부분
+		   q temp = feed[j].getinfo();
+		   if(temp.x== r && temp.y ==c)
+		   feed[j].setState(QUITE);
+		   }
+		 */
 }
+return false;
+}/*}}}*/
 bool collision (int dx, int dy){/*{{{*/
 	q temp = player.getPosition();
 	int c , r;	
-	c = (temp.x + dx + unit*col/2)/unit;
-	r = (temp.y + dy + unit*row/2)/unit;
-	//wall collision
+	int nx, ny;
+	nx = temp.x +dx;
+	ny = temp.y +dy;
+	c =ceil( (temp.x + dx + unit*col/2)/unit);
+	r =ceil( (temp.y + dy + unit*row/2)/unit);
+	// 다음 next x,y가 벽의 범위안에 있으면 false ,, 방향?
+	//printf("%d %d %d %d : %d  \n ", nx, ny,c,r,map[r][c]);
 	if (map [int(r)][int(c)] == 9 )
 		return true;
-	//feed collision
-	else if (map[r][c]==1){
-		for(int i=0; i<f_cnt; i++){
-			if(feed[i].getC()==c && feed[i].getR()==r)
-				feed[i].setStateOFF();
-		}
-	}
 	return false;
+
 }/*}}}*/
 //---------map generation-------------------------------
 //------------------------------------------------------
@@ -524,6 +571,8 @@ void print_map(){/*{{{*/
 			else if (map[i][j] == 9)
 				printf("# ");
 			else printf("%d ",map[i][j]);
+
+			//printf("%d ", map[i][j]);
 		}
 		printf("\n");
 	}
@@ -553,7 +602,7 @@ int main(int argc, char* argv[]){/*{{{*/
 		exit(0);
 	}
 
-	printf("Enter the numer of ghost (1~3)\n");
+	printf("Enter the numer of ghost (1~10)\n");
 	scanf("%d",&enemy_cnt);
 	//map initialize
 	map = (int**)calloc(row,sizeof(int*));
@@ -588,9 +637,9 @@ int main(int argc, char* argv[]){/*{{{*/
 	}
 f_left = f_cnt;
 for (int i=0; i<enemy_cnt; i++){
-	ghost[i].position(0, 0);
+	ghost[i].position(0,HEIGHT/col);
 }
-player.position(0,unit*(row/2-1));
+player.position(0,0);
 
 anglealpha=90;
 anglebeta =30;
@@ -629,72 +678,6 @@ glutMainLoop();
 return 0;
 
 }/*}}}*/
-void display()/*{{{*/
-{
-	GLint position[4];
-	GLfloat color[4];
-	GLfloat diffuse[4];
-	GLfloat specular[4];
-	GLint mdirection[4];
-	int i,j;
-
-	glClearColor(0.8,0.8,0.8,1);
-	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-	glShadeModel(GL_SMOOTH);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	PositionObserver(anglealpha, anglebeta, 700);
-
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(-WIDTH*0.6, WIDTH*0.6, -HEIGHT*0.6,HEIGHT*0.6,10,2000);
-
-	glMatrixMode(GL_MODELVIEW);
-	glPolygonMode(GL_FRONT,GL_FILL);
-
-	//--ambient{{{
-	position[0]=0; position[1]=50; position[2]=0; position[3]=0; 
-	glLightiv(GL_LIGHT0,GL_POSITION,position);
-	color[0]=0.5f; color[1]=0.5f; color[2]=0.5f; color[3]=0.7f;
-	GLfloat diffuseLight[] = { 0.5f, 0.5f, 0.5f, 0.7f };
-	GLfloat specularLight[] = { 0.5f, 0.5f, 0.5f, 0.7f };
-	glLightfv(GL_LIGHT0,GL_AMBIENT,color);
-	glEnable(GL_LIGHT0);
-
-	//-- Spot light
-	position[0]=player.getX(); position[1]=10; position[2]=player.getY(); position[3]=1; 
-	color[0]=0.8; color[1]=0.8; color[2]=0.8; color[3]=1;
-	diffuse[0]=0.7; diffuse[1]=0.7; diffuse[2]=0.7; diffuse[3]=1;
-	specular[0]=0.7;specular[1]=0.7;specular[2]=0.7;specular[3]=1;
-	glLightfv(GL_LIGHT1,GL_AMBIENT,color);
-	glLightiv(GL_LIGHT1,GL_POSITION,position);
-	glLightiv(GL_LIGHT1,GL_SPOT_DIRECTION,direction);
-	glLightfv(GL_LIGHT1,GL_DIFFUSE, diffuse);
-	glLightfv(GL_LIGHT1,GL_SPECULAR,specular);
-	glLightf (GL_LIGHT1, GL_SPOT_CUTOFF,30.0f);
-	glLightf (GL_LIGHT1, GL_SPOT_EXPONENT,100.0f);
-	glEnable(GL_LIGHT1);/*}}}*/
-	//corridor{{{
-	glColor3f(0.1,0.5,0.6);
-	glBindTexture(GL_TEXTURE_2D,0);
-	glBegin(GL_QUADS);
-	glTexCoord2f(-4.0,0.0);	glVertex3i(-unit*col/2,-unit,unit*row/2); 
-	glTexCoord2f(4.0,0.0); glVertex3i(-unit*col/2,-unit,-unit*row/2); 
-	glTexCoord2f(4.0,4.0); glVertex3i(unit*col/2,-unit,-unit*row/2); 
-	glTexCoord2f(-4.0,4.0); glVertex3i(unit*col/2,-unit,unit*row/2); 	
-
-	glEnd();
-	/*}}}*/
-	for(i=0; i<f_cnt; i++)
-		feed[i].draw();	
-	for(i=0; i<w_cnt; i++)
-		wall[i].draw();
-	player.draw(0.8,0.8,0.3);
-	for(i=0; i<enemy_cnt; i++)
-		ghost[i].draw(0.3,0.5,0.3);
-
-	glutSwapBuffers();
-}/*}}}*/
 void PositionObserver(float alpha,float beta,int radi){/*{{{*/
 	float x,y,z;
 	float upx,upy,upz;
@@ -725,6 +708,95 @@ void PositionObserver(float alpha,float beta,int radi){/*{{{*/
 	gluLookAt(x,y,z,    0.0, 0.0, 0.0,     upx,upy,upz);
 	//printf("%lf, %lf, %lf\n", upx,upy, upz);
 }/*}}}*/
+void display()
+{
+	GLfloat color[4];
+	GLfloat material[4];
+	GLfloat ambientLight[4];
+	GLfloat direction[3];
+	GLfloat SpecularColor[4];
+	GLfloat cutDegree = 20.0f;
+	int i,j;
+
+	glClearColor(0.8,0.8,0.8,1);
+	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	PositionObserver(anglealpha, anglebeta, 450);
+
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glOrtho(-WIDTH*0.6, WIDTH*0.6, -HEIGHT*0.6,HEIGHT*0.6,10,2000);
+
+	glMatrixMode(GL_MODELVIEW);
+
+	//corridor{{{
+	glColor3f(0.1,0.5,0.6);
+
+	glBindTexture(GL_TEXTURE_2D,0);
+	glBegin(GL_QUADS);
+	glTexCoord2f(-4.0,0.0);	glVertex3i(-unit*col/2,-unit,unit*row/2); 
+	glTexCoord2f(4.0,0.0); glVertex3i(-unit*col/2,-unit,-unit*row/2); 
+	glTexCoord2f(4.0,4.0); glVertex3i(unit*col/2,-unit,-unit*row/2); 
+	glTexCoord2f(-4.0,4.0); glVertex3i(unit*col/2,-unit,unit*row/2); 	
+
+	glEnd();
+	/*}}}*/
+
+	glPolygonMode(GL_FRONT,GL_FILL);
+
+	glPushMatrix();
+	glEnable(GL_LIGHTING);	
+	glEnable(GL_LIGHT0);
+
+	//light source setting
+	position[0]=player.getX(); position[1]=0; position[2]=player.getY(); position[3]=1; 
+	ambientLight[0]=0.2f; ambientLight[1]=0.2f; ambientLight[2]=0.2f; ambientLight[3]= 0;
+	color[0]=0.3; color[1]=0.3; color[2]=0.3; color[3]=0;
+		SpecularColor[0]=0.3; 	SpecularColor[1]=0.3; 	SpecularColor[2]=0.3; SpecularColor[3]=0; 
+	direction[0]=0; direction[1]=0; direction[2]=0;
+
+	glLightiv(GL_LIGHT0, GL_POSITION, position);
+	//glLightfv(GL_LIGHT0, GL_AMBIENT, ambientLight);
+	//glLightfv(GL_LIGHT0,GL_DIFFUSE,color);
+	//glLightf(GL_LIGHT0,GL_SPECULAR,SpecularColor);
+
+	//glMaterialfv(GL
+	glLightfv(GL_LIGHT0,GL_SPOT_DIRECTION,direction);
+	glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, 45.0f);
+	//glLightf(GL_LIGHT0, GL_SPOT_EXPONENT,50.0f);
+	glLightf(GL_LIGHT0,GL_CONSTANT_ATTENUATION,0.5f);
+	glLightf(GL_LIGHT0,GL_LINEAR_ATTENUATION,0.0f);
+	glLightf(GL_LIGHT0,GL_QUADRATIC_ATTENUATION,0.0f);
+
+	glEnable(GL_LIGHT0);
+	glPopMatrix();
+	//glEnable(GL_LIGHT1);
+/*	
+  position[0]=player.getX(); position[1]=75; position[2]=player.getY(); position[3]=1; 
+  glLightiv(GL_LIGHT1,GL_POSITION,position);
+  
+  color[0]=0.3	; color[1]=0.3; color[2]=0.3; color[3]=1;
+  glLightfv(GL_LIGHT1,GL_DIFFUSE,color);
+  glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 50);
+  glLightf(GL_LIGHT1,GL_CONSTANT_ATTENUATION,1.0);
+  glLightf(GL_LIGHT1,GL_LINEAR_ATTENUATION,0.0);
+  glLightf(GL_LIGHT1,GL_QUADRATIC_ATTENUATION,0.0);
+
+  glEnable(GL_LIGHT1);
+	//  glEnable(GL_LIGHT1);
+*/
+	for(i=0; i<f_cnt; i++)
+		feed[i].draw();	
+	for(i=0; i<w_cnt; i++)
+		wall[i].draw();
+	player.draw(0.8,0.8,0.3);
+	for(i=0; i<enemy_cnt; i++)
+		ghost[i].draw(0.3,0.5,0.3);
+
+	glutSwapBuffers();
+
+}
 void ckeyboard(unsigned char c,int x,int y)/*{{{*/
 {
 	int i,j;
@@ -746,33 +818,23 @@ void keyboard(int key,int x,int y){/*{{{*/
 
 		case GLUT_KEY_UP:
 			//ghost.movement(player.getPosition(),5);
-			if(!collision(0,-unit)){
-				direction[0]=0; direction[1]=0; direction[2]=-10;
-				player.movement(0,-unit,1);
-			}
+			if(!collision(0,-1))
+				player.movement(0,-1,5);
 			break;
 		case GLUT_KEY_DOWN:
 			//ghost.movement(player.getPosition(),5);			
-			if(!collision(0,unit)){
-				direction[0]=0; direction[1]=0; direction[2]=10;
-				player.movement(0,unit,1);
-			}
+			if(!collision(0,1))
+				player.movement(0,1,5);
 			break;
 		case GLUT_KEY_LEFT:
 			//ghost.movement(player.getPosition(),5);
-			if(!collision(-unit,0)){
-				direction[0]=-10; direction[1]=0; direction[2]=0;
-
-				player.movement(-unit,0,1);
-			}
+			if(!collision(-1,0))	
+				player.movement(-1,0,5);
 			break;
 		case GLUT_KEY_RIGHT:
 			//ghost.movement(player.getPosition(),5);
-			if(!collision(unit,0)){
-				direction[0]=10; direction[1]=0; direction[2]=0;
-				player.movement(unit,0,1);
-
-			}
+			if(!collision(1,0))
+				player.movement(1,0,5);
 			break;
 	}
 	glutPostRedisplay();
@@ -783,11 +845,10 @@ void idle(){/*{{{*/
 
 	t = glutGet(GLUT_ELAPSED_TIME);
 	player.integrate(t-last_t);
-		for(int i=0; i<enemy_cnt; i++){
-			if(!G_collision(0, -unit)){
-			ghost[i].movement(1);
+	for(int i=0; i<enemy_cnt; i++){
+		ghost[i].movement(player.getPosition(),5);
 		ghost[i].integrate(t-last_t);
-			}}
+	}
 	last_t = t;
 	glutPostRedisplay();
 }/*}}}*/
